@@ -77,10 +77,7 @@ def eval_func(func_path, request):
         result = getattr(module, func_str)
         if callable(result):
             args, varargs, keywords, defaults = inspect.getargspec(result)
-            if 'request' in args:
-                result = result(request)
-            else:
-                result = result()
+            result = result(request) if 'request' in args else result()
         return result
     except:
         return func_path
@@ -97,10 +94,14 @@ def admin_static_url():
 def get_shortcut_class(url):
     if url == '/':
         return 'home'
-    for key, value in CLASS_MAPPINGS:
-        if key is not None and key in url:
-            return value
-    return 'config' # default icon
+    return next(
+        (
+            value
+            for key, value in CLASS_MAPPINGS
+            if key is not None and key in url
+        ),
+        'config',
+    )
 
 
 CLASS_MAPPINGS = getattr(settings, 'ADMIN_SHORTCUTS_CLASS_MAPPINGS', [
